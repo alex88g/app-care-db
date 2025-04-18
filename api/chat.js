@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const fetch = require('cross-fetch'); // ✅ FUNKAR med CommonJS!
+const fetch = require('cross-fetch'); 
 
 router.post('/', async (req, res) => {
   const { message } = req.body;
