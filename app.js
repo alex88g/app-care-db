@@ -9,7 +9,7 @@ const doctorRoutes = require('./routes/doctors');
 const chatRoutes = require('./routes/chat');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
@@ -24,6 +24,11 @@ app.get('/', (req, res) => {
   res.send('🚀 API är igång!');
 });
 
-app.listen(port, () => {
-  console.log(`✅ Backend server is running on http://localhost:${port}`);
+app.use((err, req, res, next) => {
+  console.error('🔥 Global error handler:', err);
+  res.status(500).json({ error: 'Server error' });
+});
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`✅ Backend server is running on http://0.0.0.0:${port}`);
 });
