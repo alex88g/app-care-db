@@ -1,0 +1,85 @@
+-- 🛠️ Skapa och välj databas
+CREATE DATABASE IF NOT EXISTS booking_db;
+USE booking_db;
+
+-- 👤 Patients-tabell
+CREATE TABLE IF NOT EXISTS Patients (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  phone VARCHAR(20) NOT NULL UNIQUE,
+  ssn VARCHAR(20) NOT NULL UNIQUE,
+  email VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- 👨‍⚕️ Doctors-tabell
+CREATE TABLE IF NOT EXISTS Doctors (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  phone VARCHAR(20),
+  ssn VARCHAR(12),
+  code VARCHAR(10) NOT NULL UNIQUE
+);
+
+-- 📅 Bookings-tabell
+CREATE TABLE IF NOT EXISTS Bookings (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  date DATE NOT NULL,
+  time VARCHAR(10) NOT NULL,
+  meetingLink TEXT NOT NULL,
+  patient_id BIGINT NOT NULL,
+  FOREIGN KEY (patient_id) REFERENCES Patients(id) ON DELETE CASCADE
+);
+
+-- 🔐 OTP-tabell
+CREATE TABLE IF NOT EXISTS OTPs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  phone VARCHAR(20) NOT NULL UNIQUE,
+  code VARCHAR(10) NOT NULL,
+  expires_at DATETIME NOT NULL
+);
+
+-- 💬 ChatMessages-tabell
+CREATE TABLE IF NOT EXISTS ChatMessages (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  patient_id BIGINT NOT NULL,
+  sender ENUM('user', 'chatgpt') NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (patient_id) REFERENCES Patients(id) ON DELETE CASCADE
+);
+
+-- 👨‍⚕️ Dummy-läkare för test
+INSERT INTO Doctors (name, phone, ssn, code)
+VALUES ('Dr. Admin', '0700000000', '190001019999', '123456')
+ON DUPLICATE KEY UPDATE code = '123456';
+
+-- 🧹 Rensa gamla OTP:er med fel format
+DELETE FROM OTPs WHERE phone NOT LIKE '+46%';
+
+-- 🔄 Konvertera gamla telefonnummer till +46-format (engångskörning)
+UPDATE Patients
+SET phone = CONCAT('+46', SUBSTRING(phone, 2))
+WHERE phone LIKE '07%';
+
+-- 🧪 Sätt in testperson
+INSERT INTO Patients (name, phone, ssn, email)
+VALUES ('Testperson', '+46703455133', '199001019999', 'test@example.com')
+ON DUPLICATE KEY UPDATE email = 'test@example.com';
+
+-- 📋 Visa bokningar med patientinfo
+SELECT
+  b.id, b.date, b.time, b.meetingLink,
+  p.name, p.phone, p.email
+FROM Bookings b
+JOIN Patients p ON b.patient_id = p.id;
+
+-- 💬 Visa chattmeddelanden för testperson
+SELECT * FROM ChatMessages
+WHERE patient_id = (SELECT id FROM Patients WHERE phone = '+46703455133')
+ORDER BY created_at ASC;
+
+-- 🧽 Ta bort testdata
+DELETE FROM ChatMessages WHERE patient_id = (SELECT id FROM Patients WHERE phone = '+46703455133');
+DELETE FROM Bookings WHERE patient_id = (SELECT id FROM Patients WHERE phone = '+46703455133');
+DELETE FROM OTPs WHERE phone = '+46703455133';
+DELETE FROM Patients WHERE phone = '+46703455133';

@@ -1,5 +1,5 @@
 const fetch = require('cross-fetch');
-const db = require('../db'); 
+const db = require('../db');
 
 const allowedKeywords = [
   "boka", "bokning", "läkartid", "tid", "avboka", "mina bokningar",
@@ -8,12 +8,16 @@ const allowedKeywords = [
   "support", "hjälp med bokning", "möteslänk", "skapa möte", "akut vård"
 ];
 
+
 exports.sendMessage = async (req, res) => {
   const { message, patientId } = req.body;
 
-  if (!message || !patientId) {
-    return res.status(400).json({ error: 'Meddelande och patientId krävs' });
+  if (!message) {
+    return res.status(400).json({ error: 'Meddelande krävs' });
   }
+
+
+  const isLoggedIn = !!patientId;
 
   const isRelevant = allowedKeywords.some(keyword =>
     message.toLowerCase().includes(keyword)
@@ -21,12 +25,24 @@ exports.sendMessage = async (req, res) => {
 
   if (!isRelevant) {
     const botReply = "Tyvärr, vi svarar endast på frågor som rör vårdappen, bokningar och navigering till bokningar.";
-    await db.query(`INSERT INTO ChatMessages (patient_id, sender, message) VALUES (?, 'chatgpt', ?)`, [patientId, botReply]);
+    
+    if (isLoggedIn) {
+      await db.query(
+        `INSERT INTO ChatMessages (patient_id, sender, message) VALUES (?, 'chatgpt', ?)`,
+        [patientId, botReply]
+      );
+    }
+
     return res.json({ response: botReply });
   }
 
   try {
-    await db.query(`INSERT INTO ChatMessages (patient_id, sender, message) VALUES (?, 'user', ?)`, [patientId, message]);
+    if (isLoggedIn) {
+      await db.query(
+        `INSERT INTO ChatMessages (patient_id, sender, message) VALUES (?, 'user', ?)`,
+        [patientId, message]
+      );
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -39,8 +55,7 @@ exports.sendMessage = async (req, res) => {
         messages: [
           {
             role: 'system',
-            content: `Du är en assistent för en vårdapp. 
-            Du får **endast** svara på frågor som handlar om bokningar och appens funktioner.`
+            content: `Du är en assistent för en vårdapp. Du får endast svara på frågor som handlar om bokningar och appens funktioner.`
           },
           { role: 'user', content: message }
         ],
@@ -50,15 +65,20 @@ exports.sendMessage = async (req, res) => {
     });
 
     const data = await response.json();
-    const botReply = data.choices[0].message.content;
+    const botReply = data?.choices?.[0]?.message?.content || "⚠️ Inget svar från GPT.";
 
-    await db.query(`INSERT INTO ChatMessages (patient_id, sender, message) VALUES (?, 'chatgpt', ?)`, [patientId, botReply]);
+    if (isLoggedIn) {
+      await db.query(
+        `INSERT INTO ChatMessages (patient_id, sender, message) VALUES (?, 'chatgpt', ?)`,
+        [patientId, botReply]
+      );
+    }
 
     res.json({ response: botReply });
 
   } catch (err) {
     console.error("❌ OpenAI-fel:", err);
-    res.status(500).json({ error: 'Internt serverfel' });
+    res.status(500).json({ error: 'Internt serverfel vid GPT-svar' });
   }
 };
 
@@ -66,7 +86,10 @@ exports.getMessagesByPatient = async (req, res) => {
   const { patientId } = req.params;
 
   try {
-    const [rows] = await db.query('SELECT * FROM ChatMessages WHERE patient_id = ? ORDER BY id ASC', [patientId]);
+    const [rows] = await db.query(
+      'SELECT * FROM ChatMessages WHERE patient_id = ? ORDER BY created_at ASC',
+      [patientId]
+    );
     res.json(rows);
   } catch (error) {
     console.error("❌ Fel vid hämtning:", error);
