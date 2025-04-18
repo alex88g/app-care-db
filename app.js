@@ -32,3 +32,7 @@ app.use((err, req, res, next) => {
 app.listen(port, '0.0.0.0', () => {
   console.log(`✅ Backend server is running on http://0.0.0.0:${port}`);
 });
+
+setInterval(() => {
+  console.log('🔁 Keep-alive ping...');
+}, 60 * 1000); 
