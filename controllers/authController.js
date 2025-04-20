@@ -31,7 +31,7 @@ exports.loginPatient = async (req, res) => {
 
 exports.registerPatient = async (req, res) => {
   const { name, phone, ssn, email } = req.body;
-  const formattedPhone = phone.startsWith('+46') ? phone : '+46' + phone.replace(/^0/, '');
+  const formattedPhone = formatPhone(phone);
 
   if (!name || !phone || !ssn || !email) {
     return res.status(400).json({ type: 'error', message: 'Alla fält krävs för registrering' });
@@ -124,11 +124,8 @@ exports.sendOTP = async (req, res) => {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
   try {
-   
     await db.query('DELETE FROM OTPs WHERE expires_at < NOW()');
-
     await db.query('DELETE FROM OTPs WHERE phone = ?', [formattedPhone]);
-
     await db.query(
       'INSERT INTO OTPs (phone, code, expires_at) VALUES (?, ?, NOW() + INTERVAL 5 MINUTE)',
       [formattedPhone, otp]
@@ -143,14 +140,13 @@ exports.sendOTP = async (req, res) => {
 };
 
 exports.verifyOTP = async (req, res) => {
-  console.log("📥 verifyOTP körs med:", req.body);
   const { phone, code } = req.body;
 
   if (!phone || !code) {
     return res.status(400).json({ type: 'error', message: 'Telefonnummer och kod krävs' });
   }
 
-  const formattedPhone = phone.startsWith('+46') ? phone : '+46' + phone.replace(/^0/, '');
+  const formattedPhone = formatPhone(phone);
 
   try {
     const [otpRows] = await db.query(
@@ -174,7 +170,6 @@ exports.verifyOTP = async (req, res) => {
     await db.query('DELETE FROM OTPs WHERE phone = ?', [formattedPhone]);
 
     res.json({ type: 'success', data: patients[0] });
-
   } catch (err) {
     console.error('❌ Fel vid verifyOTP:', err);
     res.status(500).json({ type: 'error', message: 'Fel vid verifiering' });
@@ -185,7 +180,7 @@ exports.checkPhoneExists = async (req, res) => {
   const { phone } = req.body;
   if (!phone) return res.status(400).json({ type: 'error', message: 'Telefonnummer krävs' });
 
-  const formattedPhone = phone.startsWith('+46') ? phone : '+46' + phone.replace(/^0/, '');
+  const formattedPhone = formatPhone(phone);
 
   try {
     const [rows] = await db.query('SELECT id FROM Patients WHERE phone = ?', [formattedPhone]);
