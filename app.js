@@ -13,7 +13,9 @@ const port = process.env.PORT || 8080;
 const allowedOrigins = [
   'http://localhost:5173',
   'https://app-care.vercel.app',
-  'https://app-care-d2mwv08cr-alexs-projects-6727ece4.vercel.app'
+  'https://app-care-d2mwv08cr-alexs-projects-6727ece4.vercel.app',
+  'https://app-care-essf6ell4-alexs-projects-6727ece4.vercel.app',
+  'https://app-care-9ti3gmfrf-alexs-projects-6727ece4.vercel.app'
 ];
 
 const corsOptions = {
@@ -21,16 +23,18 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('❌ Not allowed by CORS'));
+      console.error(`❌ Blocked CORS origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
+
 app.options('*', cors(corsOptions));
 
 app.use(express.json());
@@ -39,8 +43,8 @@ setInterval(() => {
   console.log('🔁 Keep-alive ping to prevent Railway from stopping...');
 }, 60000);
 
-app.get('/ping', (req, res) => {
-  res.send('pong');
+app.get('/api/ping', (req, res) => {
+  res.json({ message: 'pong' });
 });
 
 app.use('/api/auth', authRoutes);
