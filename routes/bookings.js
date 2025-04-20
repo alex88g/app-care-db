@@ -16,3 +16,4 @@ router.delete('/:id', deleteBooking);
 router.get('/available-times', getAvailableTimes); 
 
 module.exports = router;
+ 

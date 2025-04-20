@@ -4,8 +4,6 @@ const cors = require('cors');
 
 const authRoutes = require('./routes/auth');
 const bookingRoutes = require('./routes/bookings');
-const patientRoutes = require('./routes/patients');
-const doctorRoutes = require('./routes/doctors');
 const chatRoutes = require('./routes/chat');
 
 const app = express();
@@ -15,9 +13,9 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api', authRoutes);
+
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/patients', patientRoutes);
-app.use('/api/doctors', doctorRoutes);
+
 app.use('/api/chat', chatRoutes);
 
 app.get('/', (req, res) => {
@@ -34,5 +32,5 @@ app.listen(port, '0.0.0.0', () => {
 });
 
 setInterval(() => {
-  console.log('🔁 Keep-alive ping...');
-}, 60 * 1000); 
+  console.log('🔁 Keep-alive ping to prevent Railway from stopping...');
+}, 60000);
