@@ -49,7 +49,7 @@ node app.js
 
 ![ER Diagram](./er-diagram.png)
 
-> Diagrammet visar relationen mellan patienter, läkare, bokningar och OTP-tabellen.
+> Diagrammet visar relationen mellan patienter, läkare, bokningar och OTP-tabellen..
 
 ---
 
