@@ -18,24 +18,22 @@ const allowedOrigins = [
   'https://app-care-9ti3gmfrf-alexs-projects-6727ece4.vercel.app'
 ];
 
-const corsOptions = {
-  origin: function (origin, callback) {
+app.use(cors({
+  origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.error(`❌ Blocked CORS origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      console.warn(`❌ Blocked by CORS: ${origin}`);
+      callback(null, false);
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 204
-};
+  optionsSuccessStatus: 204,
+}));
 
-app.use(cors(corsOptions));
-
-app.options('*', cors(corsOptions));
+app.options('*', cors()); 
 
 app.use(express.json());
 
@@ -43,7 +41,7 @@ setInterval(() => {
   console.log('🔁 Keep-alive ping to prevent Railway from stopping...');
 }, 60000);
 
-app.get('/api/ping', (req, res) => {
+app.get('/ping', (req, res) => {
   res.json({ message: 'pong' });
 });
 
