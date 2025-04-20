@@ -16,18 +16,22 @@ const allowedOrigins = [
   'https://app-care-d2mwv08cr-alexs-projects-6727ece4.vercel.app'
 ];
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('❌ Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type']
-}));
+  allowedHeaders: ['Content-Type'],
+  credentials: true,
+  optionsSuccessStatus: 204
+};
 
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
@@ -49,8 +53,8 @@ app.get('/', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error('🔥 Global error:', err);
-  res.status(500).json({ error: 'Server error' });
+  console.error('🔥 Global error:', err.message);
+  res.status(500).json({ error: 'Server error', message: err.message });
 });
 
 app.listen(port, '0.0.0.0', () => {
