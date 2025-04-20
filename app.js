@@ -1,49 +1,52 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const app = express();
 
+const authRoutes = require('./routes/auth');
+const patientRoutes = require('./routes/patients');
+const bookingRoutes = require('./routes/bookings');
+const chatRoutes = require('./routes/chat');
+
+const app = express();
 const port = process.env.PORT || 8080;
 
-const allowedOrigins = [
-  'http://localhost:5173',         
-  'https://app-care.vercel.app'     
-];
-
+// ✅ CORS-konfiguration för både lokal utveckling och Vercel
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: ['http://localhost:5173', 'https://app-care.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type'],
 }));
 
+app.use(express.json());
+
+// 🔁 Keep-alive ping för Railway
+setInterval(() => {
+  console.log('🔁 Keep-alive ping to prevent Railway from stopping...');
+}, 60000);
+
+// 🔒 Ping-rutt för hälsokontroll
 app.get('/ping', (req, res) => {
   res.send('pong');
 });
 
-app.post('/api/auth/doctors/login', (req, res) => {
-  const { code } = req.body;
-  if (code === '123456') {
-    return res.json({ message: 'Läkarinloggning lyckades', data: { name: 'Dr. House' } });
-  }
-  res.status(401).json({ message: 'Fel kod' });
-});
+// 📦 API-rutter
+app.use('/api/auth', authRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/chat', chatRoutes);
 
+// 🚀 Standardhälsorutt
 app.get('/', (req, res) => {
-  res.send('Backend online 🚀');
+  res.send('🚀 API is running and healthy!');
 });
 
+// 🔥 Global felhanterare
 app.use((err, req, res, next) => {
   console.error('🔥 Global error:', err);
-  res.status(500).json({ error: err.message || 'Server error' });
+  res.status(500).json({ error: 'Server error' });
 });
 
+// 🚀 Starta servern
 app.listen(port, '0.0.0.0', () => {
-  console.log(`✅ Server listening on http://0.0.0.0:${port}`);
+  console.log(`✅ Backend server is running on http://0.0.0.0:${port}`);
 });
