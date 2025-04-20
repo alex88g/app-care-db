@@ -4,7 +4,6 @@ const cors = require('cors');
 
 const authRoutes = require('./routes/auth');
 const patientRoutes = require('./routes/patients');
-const doctorRoutes = require('./routes/doctors');
 const bookingRoutes = require('./routes/bookings');
 const chatRoutes = require('./routes/chat');
 
@@ -16,7 +15,6 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);           
 app.use('/api/patients', patientRoutes);    
-app.use('/api/doctors', doctorRoutes);      
 app.use('/api/bookings', bookingRoutes);    
 app.use('/api/chat', chatRoutes);          
 
