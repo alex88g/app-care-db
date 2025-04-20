@@ -6,24 +6,22 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 const allowedOrigins = [
-  'http://localhost:5173',
-  'https://app-care.vercel.app'
+  'http://localhost:5173',         
+  'https://app-care.vercel.app'     
 ];
 
 app.use(cors({
-  origin: (origin, callback) => {
+  origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
-
-app.use(express.json());
 
 app.get('/ping', (req, res) => {
   res.send('pong');
