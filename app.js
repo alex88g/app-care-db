@@ -18,22 +18,25 @@ const allowedOrigins = [
   'https://app-care-9ti3gmfrf-alexs-projects-6727ece4.vercel.app'
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
+const corsOptions = {
+  origin: function (origin, callback) {
+    console.log('🌐 Incoming origin:', origin);
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.warn(`❌ Blocked by CORS: ${origin}`);
-      callback(null, false);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 204,
-}));
+};
 
-app.options('*', cors()); 
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); 
+
 
 app.use(express.json());
 
