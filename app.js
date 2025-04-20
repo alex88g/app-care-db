@@ -10,10 +10,10 @@ const chatRoutes = require('./routes/chat');
 const app = express();
 const port = process.env.PORT || 8080;
 
-// ✅ Dynamiskt CORS (för både local dev och Vercel)
 const allowedOrigins = [
   'http://localhost:5173',
   'https://app-care.vercel.app',
+  'https://app-care-d2mwv08cr-alexs-projects-6727ece4.vercel.app'
 ];
 
 app.use(cors({
@@ -21,13 +21,13 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('CORS not allowed from this origin: ' + origin));
+      callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
-  credentials: true
+  allowedHeaders: ['Content-Type']
 }));
+
 
 app.use(express.json());
 
