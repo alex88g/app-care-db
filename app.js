@@ -10,43 +10,49 @@ const chatRoutes = require('./routes/chat');
 const app = express();
 const port = process.env.PORT || 8080;
 
-// ✅ CORS-konfiguration för både lokal utveckling och Vercel
+// ✅ Dynamiskt CORS (för både local dev och Vercel)
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://app-care.vercel.app',
+];
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://app-care.vercel.app'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed from this origin: ' + origin));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
+  credentials: true
 }));
 
 app.use(express.json());
 
-// 🔁 Keep-alive ping för Railway
 setInterval(() => {
   console.log('🔁 Keep-alive ping to prevent Railway from stopping...');
 }, 60000);
 
-// 🔒 Ping-rutt för hälsokontroll
 app.get('/ping', (req, res) => {
   res.send('pong');
 });
 
-// 📦 API-rutter
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/chat', chatRoutes);
 
-// 🚀 Standardhälsorutt
 app.get('/', (req, res) => {
   res.send('🚀 API is running and healthy!');
 });
 
-// 🔥 Global felhanterare
 app.use((err, req, res, next) => {
   console.error('🔥 Global error:', err);
   res.status(500).json({ error: 'Server error' });
 });
 
-// 🚀 Starta servern
 app.listen(port, '0.0.0.0', () => {
   console.log(`✅ Backend server is running on http://0.0.0.0:${port}`);
 });
