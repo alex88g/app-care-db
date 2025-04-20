@@ -1,41 +1,51 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-
-const authRoutes = require('./routes/auth');
-const patientRoutes = require('./routes/patients');
-const bookingRoutes = require('./routes/bookings');
-const chatRoutes = require('./routes/chat');
-
 const app = express();
+
 const port = process.env.PORT || 8080;
 
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://app-care.vercel.app'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 app.get('/ping', (req, res) => {
   res.send('pong');
 });
 
-
-app.use('/api/auth', authRoutes);           
-app.use('/api/patients', patientRoutes);    
-app.use('/api/bookings', bookingRoutes);    
-app.use('/api/chat', chatRoutes);          
+app.post('/api/auth/doctors/login', (req, res) => {
+  const { code } = req.body;
+  if (code === '123456') {
+    return res.json({ message: 'Läkarinloggning lyckades', data: { name: 'Dr. House' } });
+  }
+  res.status(401).json({ message: 'Fel kod' });
+});
 
 app.get('/', (req, res) => {
-  res.send('🚀 API is running and healthy!');
+  res.send('Backend online 🚀');
 });
 
 app.use((err, req, res, next) => {
   console.error('🔥 Global error:', err);
-  res.status(500).json({ error: 'Server error' });
+  res.status(500).json({ error: err.message || 'Server error' });
 });
 
 app.listen(port, '0.0.0.0', () => {
-  console.log(`✅ Backend server is running on http://0.0.0.0:${port}`);
+  console.log(`✅ Server listening on http://0.0.0.0:${port}`);
 });
-
-setInterval(() => {
-  console.log('🔁 Keep-alive ping to prevent Railway from stopping...');
-}, 60000);
