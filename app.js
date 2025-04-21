@@ -15,7 +15,8 @@ const allowedOrigins = [
   'https://app-care.vercel.app',
   'https://app-care-d2mwv08cr-alexs-projects-6727ece4.vercel.app',
   'https://app-care-essf6ell4-alexs-projects-6727ece4.vercel.app',
-  'https://app-care-9ti3gmfrf-alexs-projects-6727ece4.vercel.app'
+  'https://app-care-9ti3gmfrf-alexs-projects-6727ece4.vercel.app',
+  'https://app-care-db-production.up.railway.app'
 ];
 
 app.use(cors({
