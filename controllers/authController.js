@@ -104,7 +104,9 @@ exports.deletePatient = async (req, res) => {
   }
 
   try {
+    await db.query('DELETE FROM Bookings WHERE patient_id = ?', [id]);
     const [result] = await db.query('DELETE FROM Patients WHERE id = ?', [id]);
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ type: 'error', message: 'Ingen patient hittades med detta ID' });
     }

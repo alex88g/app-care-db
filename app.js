@@ -18,30 +18,15 @@ const allowedOrigins = [
   'https://app-care-9ti3gmfrf-alexs-projects-6727ece4.vercel.app'
 ];
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`❌ Blocked by CORS: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 204
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions), (req, res) => {
-  res.sendStatus(204);
-});
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 app.use(express.json());
 
 setInterval(() => {
-  console.log('🔁 Keep-alive ping to prevent Railway from stopping...');
+  console.log('🔁 Railway keep-alive ping');
 }, 60000);
 
 app.get('/ping', (req, res) => {

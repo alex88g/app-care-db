@@ -18,6 +18,11 @@ exports.createBooking = async (req, res) => {
   const { date, time, meetingLink, patient_id } = req.body;
 
   try {
+    const [patientExists] = await db.query('SELECT id FROM Patients WHERE id = ?', [patient_id]);
+    if (patientExists.length === 0) {
+      return res.status(400).json({ type: 'error', message: 'Ogiltigt patient-ID' });
+    }
+
     const [existing] = await db.query(
       'SELECT * FROM Bookings WHERE date = ? AND time = ?',
       [date, time]
@@ -31,7 +36,8 @@ exports.createBooking = async (req, res) => {
       'INSERT INTO Bookings (date, time, meetingLink, patient_id) VALUES (?, ?, ?, ?)',
       [date, time, meetingLink, patient_id]
     );
-    res.json({ type: 'success', message: 'Bokning skapad', id: result.insertId });
+
+    res.status(201).json({ type: 'success', message: 'Bokning skapad', id: result.insertId });
   } catch (err) {
     console.error('❌ Fel vid CREATE booking:', err);
     res.status(500).json({ type: 'error', message: 'Kunde inte skapa bokningen' });
@@ -43,10 +49,15 @@ exports.updateBooking = async (req, res) => {
   const { date, time, meetingLink } = req.body;
 
   try {
-    await db.query(
+    const [result] = await db.query(
       'UPDATE Bookings SET date = ?, time = ?, meetingLink = ? WHERE id = ?',
       [date, time, meetingLink, id]
     );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ type: 'error', message: 'Ingen bokning hittades att uppdatera' });
+    }
+
     res.json({ type: 'success', message: 'Bokning uppdaterad' });
   } catch (err) {
     console.error('❌ Fel vid UPDATE booking:', err);
@@ -58,7 +69,12 @@ exports.deleteBooking = async (req, res) => {
   const id = req.params.id;
 
   try {
-    await db.query('DELETE FROM Bookings WHERE id = ?', [id]);
+    const [result] = await db.query('DELETE FROM Bookings WHERE id = ?', [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ type: 'error', message: 'Ingen bokning hittades att radera' });
+    }
+
     res.json({ type: 'success', message: 'Bokning raderad' });
   } catch (err) {
     console.error('❌ Fel vid DELETE booking:', err);

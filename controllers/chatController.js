@@ -8,16 +8,21 @@ const allowedKeywords = [
   "support", "hjälp med bokning", "möteslänk", "skapa möte", "akut vård"
 ];
 
-
 exports.sendMessage = async (req, res) => {
   const { message, patientId } = req.body;
 
   if (!message) {
-    return res.status(400).json({ error: 'Meddelande krävs' });
+    return res.status(400).json({ type: 'error', message: 'Meddelande krävs' });
   }
 
-
   const isLoggedIn = !!patientId;
+
+  if (isLoggedIn) {
+    const [patient] = await db.query('SELECT id FROM Patients WHERE id = ?', [patientId]);
+    if (patient.length === 0) {
+      return res.status(400).json({ type: 'error', message: 'Ogiltigt patient-ID' });
+    }
+  }
 
   const isRelevant = allowedKeywords.some(keyword =>
     message.toLowerCase().includes(keyword)
@@ -25,7 +30,7 @@ exports.sendMessage = async (req, res) => {
 
   if (!isRelevant) {
     const botReply = "Tyvärr, vi svarar endast på frågor som rör vårdappen, bokningar och navigering till bokningar.";
-    
+
     if (isLoggedIn) {
       await db.query(
         `INSERT INTO ChatMessages (patient_id, sender, message) VALUES (?, 'chatgpt', ?)`,
@@ -33,7 +38,7 @@ exports.sendMessage = async (req, res) => {
       );
     }
 
-    return res.json({ response: botReply });
+    return res.json({ type: 'info', response: botReply });
   }
 
   try {
@@ -55,7 +60,7 @@ exports.sendMessage = async (req, res) => {
         messages: [
           {
             role: 'system',
-            content: `Du är en assistent för en vårdapp. Du får endast svara på frågor som handlar om bokningar och appens funktioner.`
+            content: 'Du är en assistent för en vårdapp. Du får endast svara på frågor som handlar om bokningar och appens funktioner.'
           },
           { role: 'user', content: message }
         ],
@@ -74,11 +79,11 @@ exports.sendMessage = async (req, res) => {
       );
     }
 
-    res.json({ response: botReply });
+    res.json({ type: 'success', response: botReply });
 
   } catch (err) {
     console.error("❌ OpenAI-fel:", err);
-    res.status(500).json({ error: 'Internt serverfel vid GPT-svar' });
+    res.status(500).json({ type: 'error', message: 'Internt serverfel vid GPT-svar' });
   }
 };
 
@@ -90,9 +95,9 @@ exports.getMessagesByPatient = async (req, res) => {
       'SELECT * FROM ChatMessages WHERE patient_id = ? ORDER BY created_at ASC',
       [patientId]
     );
-    res.json(rows);
+    res.json({ type: 'success', data: rows });
   } catch (error) {
-    console.error("❌ Fel vid hämtning:", error);
-    res.status(500).json({ error: 'Kunde inte hämta meddelanden' });
+    console.error("❌ Fel vid hämtning av meddelanden:", error);
+    res.status(500).json({ type: 'error', message: 'Kunde inte hämta meddelanden' });
   }
 };

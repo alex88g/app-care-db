@@ -12,7 +12,7 @@ require('dotenv').config();
         phone VARCHAR(20) NOT NULL UNIQUE,
         ssn VARCHAR(20) NOT NULL UNIQUE,
         email VARCHAR(100) NOT NULL UNIQUE
-      );
+      ) ENGINE=InnoDB CHARACTER SET utf8mb4;
 
       CREATE TABLE IF NOT EXISTS Doctors (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -20,7 +20,7 @@ require('dotenv').config();
         phone VARCHAR(20),
         ssn VARCHAR(12),
         code VARCHAR(10) NOT NULL UNIQUE
-      );
+      ) ENGINE=InnoDB CHARACTER SET utf8mb4;
 
       CREATE TABLE IF NOT EXISTS Bookings (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -29,14 +29,14 @@ require('dotenv').config();
         meetingLink TEXT NOT NULL,
         patient_id BIGINT NOT NULL,
         FOREIGN KEY (patient_id) REFERENCES Patients(id) ON DELETE CASCADE
-      );
+      ) ENGINE=InnoDB CHARACTER SET utf8mb4;
 
       CREATE TABLE IF NOT EXISTS OTPs (
         id INT AUTO_INCREMENT PRIMARY KEY,
         phone VARCHAR(20) NOT NULL UNIQUE,
         code VARCHAR(10) NOT NULL,
         expires_at DATETIME NOT NULL
-      );
+      ) ENGINE=InnoDB CHARACTER SET utf8mb4;
 
       CREATE TABLE IF NOT EXISTS ChatMessages (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -45,7 +45,7 @@ require('dotenv').config();
         message TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (patient_id) REFERENCES Patients(id) ON DELETE CASCADE
-      );
+      ) ENGINE=InnoDB CHARACTER SET utf8mb4;
 
       INSERT INTO Doctors (name, phone, ssn, code)
       VALUES ('Dr. Admin', '0700000000', '190001019999', '123456')
