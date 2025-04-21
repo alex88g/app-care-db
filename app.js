@@ -8,7 +8,8 @@ const bookingRoutes = require('./routes/bookings');
 const chatRoutes = require('./routes/chat');
 
 const app = express();
-const port = process.env.PORT || 8080;
+
+const port = process.env.PORT || 3000;
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -31,7 +32,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
-
 app.use(express.json());
 
 app.get('/ping', (req, res) => {
@@ -55,4 +55,3 @@ app.use((err, req, res, next) => {
 app.listen(port, '0.0.0.0', () => {
   console.log(`✅ Server running on http://0.0.0.0:${port}`);
 });
-
