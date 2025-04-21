@@ -10,13 +10,29 @@ const chatRoutes = require('./routes/chat');
 const app = express();
 const port = process.env.PORT || 8080;
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://app-care.vercel.app',
+  'https://app-care-d2mwv08cr-alexs-projects-6727ece4.vercel.app',
+  'https://app-care-essf6ell4-alexs-projects-6727ece4.vercel.app',
+  'https://app-care-9ti3gmfrf-alexs-projects-6727ece4.vercel.app',
+  'https://app-care-8cj93n9u-alexs-projects-6727ece4.vercel.app', 
+  'https://app-care-db-production.up.railway.app'
+];
+
 app.use(cors({
   origin: (origin, callback) => {
-    callback(null, true);
+    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('https://app-care-') && origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      console.warn(`❌ CORS blockerat: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 204
 }));
 
 app.use(express.json());
@@ -37,7 +53,6 @@ app.use('/api/chat', chatRoutes);
 app.get('/', (req, res) => {
   res.send('🚀 API is running and healthy!');
 });
-
 
 app.use((err, req, res, next) => {
   console.error('🔥 Global error:', err.message);
