@@ -1,4 +1,4 @@
-# app-care-db
+## ℹ️ Deployment Info & Demo
 
 # 🩺 Vårdappen – Backend
 
@@ -131,11 +131,9 @@ DB_PASSWORD=your_password
 DB_NAME=booking_db
 OPENAI_API_KEY=sk-...
 BREVO_API_KEY=...
-DATABASE_URL=...
-VITE_BREVO_API_KEY=...
 
 ```
 
 ## 📄 Licens
 
-© 2025 Alexander Gallorini & Filip Kostic – IT - Högskolan
+Frontend © 2025 Alexander Gallorini & Filip Kostic – IT University
