@@ -10,8 +10,6 @@ const chatRoutes = require('./routes/chat');
 const app = express();
 const port = process.env.PORT || 8080;
 
-const cors = require('cors');
-
 const allowedOrigins = [
   'http://localhost:5173',
   'https://app-care.vercel.app',
