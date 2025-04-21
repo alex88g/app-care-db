@@ -10,11 +10,27 @@ const chatRoutes = require('./routes/chat');
 const app = express();
 const port = process.env.PORT || 8080;
 
+const cors = require('cors');
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://app-care.vercel.app',
+  'https://app-care-8c193nr9u-alexs-projects-6727ece4.vercel.app'
+];
+
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("❌ Not allowed by CORS: " + origin));
+    }
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 
 app.use(express.json());
 
